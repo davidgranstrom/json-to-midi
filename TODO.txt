@@ -1,0 +1,5 @@
+TODO
+
+* Add `midifile` as a project submodule
+* Modify Makefile to build libmidifile and (copy it?) if not present in lib/ dir
+    - Or just change lib/inc paths to read from the submodule
