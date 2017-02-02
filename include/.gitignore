@@ -1,0 +1,6 @@
+Binasc.h
+MidiEvent.h
+MidiEventList.h
+MidiFile.h
+MidiMessage.h
+Options.h
