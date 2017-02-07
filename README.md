@@ -3,36 +3,57 @@ json-to-midi
 
 `json2midi` is a command line tool for converting a json document into a midi file.
 
-## key table 
+## Usage
 
-This table contains the keys recognizable by `json2midi`
+    ./json2midi --input input.json --output output.mid
 
-The event key is the name of the midi event:
+## Documentation
 
-* event
-    - note
-    - cc
+## Document structure
+
+The MIDI file is parsed from a json document.
+
+    {
+        bpm: 128,
+        timeSig: "4/4",
+        tracks: [ [track-1-events .. ], [track-2-events] ],
+    }
+
+
+`tracks` contains event lists, a new MIDI track will be created for each event list.  
+`bpm` will set bpm value for track 0 (meta track)
+`timeSig` (not implemented yet)
+
+## Event types
+
+The `eventType` key specifies the midi event:
+
+* eventType
+    - `note`
+    - `cc` (not implemented yet)
 
 All events are required to have an absolute time in seconds:
 
 * `absTime` (inter-onset time)
 
-A `note` object will be translated into a noteOn/noteOff midi event.
-It is required to have the following keys:
+### note
+
+A `note` event will be translated into noteOn/noteOff midi event pairs. The `duration` key specifies when to send the noteOff event.
 
 * `midinote` (0 - 127)
-
-Optional:
-
 * `channel` (default 0)
 * `duration` (default 1 second)
 * `velocity` (default 64)
 
-TODO: write spec for `cc`
+### cc
 
-### Example document
+TODO: write spec
+
+## Example document
 
     {
+        "timeSig": "4/4",
+        "bpm": 120,
         "tracks": [
             [
                 { "eventType": "note", "absTime": 0, "duration": 1, "midinote": 60 },
@@ -42,7 +63,5 @@ TODO: write spec for `cc`
             [
                 { "eventType": "note", "absTime": 0, "duration": 3, "midinote": 60 },
             ]
-        ],
-        "timeSig": "4/4",
-        "bpm": 120
+        ]
     }
