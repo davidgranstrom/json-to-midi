@@ -81,7 +81,7 @@ int writeMIDIFile(json input, std::string output)
         bpm = 60;
     }
 
-    const int tpq = 128; // ticks per quarter note
+    const int tpq = 192; // ticks per quarter note
     const float timeScale = tpq * (bpm / 60);
 
     auto &tracks = input["tracks"];
