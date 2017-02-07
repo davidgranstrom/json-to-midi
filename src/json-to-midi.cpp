@@ -8,9 +8,9 @@
 using json = nlohmann::json;
 
 enum MidiTypes {
-    eNOTE,
-    eCC,
-    eUNDEFINED
+    nNOTE,
+    nCC,
+    nUNDEFINED
 };
 
 json parseInput(std::string input);
@@ -62,9 +62,9 @@ json parseInput(std::string input)
 }
 
 MidiTypes getEnumValue(std::string const &type) {
-    if (type == "note") return eNOTE;
-    if (type == "cc") return eCC;
-    return eUNDEFINED;
+    if (type == "note") return nNOTE;
+    if (type == "cc") return nCC;
+    return nUNDEFINED;
 }
 
 int writeMIDIFile(json input, std::string output)
@@ -101,7 +101,7 @@ int writeMIDIFile(json input, std::string output)
                 float absTime = event["absTime"].get<float>();
 
                 switch (getEnumValue(type)) {
-                    case eNOTE: {
+                    case nNOTE: {
                         std::cout << "Found note event" << std::endl;
                         int vel, pitch, channel;
                         float dur;
@@ -136,11 +136,11 @@ int writeMIDIFile(json input, std::string output)
                         midifile.addNoteOff(track, (absTime + dur) * timeScale, channel, pitch, 0);
                         break;
                     }
-                    case eCC: {
+                    case nCC: {
                         std::cout << "Found cc event" << std::endl;
                         break;
                     }
-                    case eUNDEFINED: {
+                    case nUNDEFINED: {
                         std::cout << "Skipping undefined event" << std::endl;
                         break;
                     }
