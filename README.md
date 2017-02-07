@@ -14,12 +14,12 @@ The MIDI file is parsed from a json document.
     {
         bpm: 128,
         timeSig: "4/4",
-        tracks: [ [track-1-events .. ], [track-2-events] ],
+        tracks: [ [track1-eventlist .. ], [track2-eventlist .. ] ],
     }
 
 
 `tracks` contains event lists, a new MIDI track will be created for each event list.  
-`bpm` will set bpm value for track 0 (meta track)
+`bpm` will set bpm value for track 0 (meta track)  
 `timeSig` (not implemented yet)
 
 ## Event types
