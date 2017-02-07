@@ -102,7 +102,7 @@ int writeMIDIFile(json input, std::string output)
 
                 switch (getEnumValue(type)) {
                     case nNOTE: {
-                        std::cout << "Found note event" << std::endl;
+                        /* std::cout << "Found note event" << std::endl; */
                         int vel, pitch, channel;
                         float dur;
 
