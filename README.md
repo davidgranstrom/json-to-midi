@@ -7,8 +7,6 @@ json-to-midi
 
     ./json2midi --input input.json --output output.mid
 
-## Documentation
-
 ## Document structure
 
 The MIDI file is parsed from a json document.
