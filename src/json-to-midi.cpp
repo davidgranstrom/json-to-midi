@@ -145,12 +145,12 @@ int writeMIDIFile(json input, std::string output)
                     }
                 }
             }
-
         }
         track++;
     }
 
     midifile.sortTracks();
-    /* midifile.joinTracks(); */
-    return midifile.write(output);
+    midifile.write(output);
+    // true on success
+    return !midifile.status();
 }
