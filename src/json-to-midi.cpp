@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     std::string outputPath;
 
     try {
-        cxxopts::Options options(argv[0]);
+        cxxopts::Options options(argv[0], "json2midi - json to midi file converter");
 
         options.add_options()
             ("i,input", "json document input file", cxxopts::value<std::string>(), "FILE")
@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
 
         options.parse(argc, argv);
 
-        if (options.count("help")) {
-            std::cout << options.help({"", "Group"}) << std::endl;
+        if (options.count("help") || !options.count("input") || !options.count("output")) {
+            std::cout << options.help() << std::endl;
             exit(0);
         }
 
