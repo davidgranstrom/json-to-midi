@@ -85,7 +85,6 @@ int writeMIDIFile(json input, std::string output)
     const float timeScale = tpq * (bpm / 60);
 
     auto &tracks = input["tracks"];
-    /* int channel = 0; */
     int track = 1;
 
     midifile.setTicksPerQuarterNote(tpq);
