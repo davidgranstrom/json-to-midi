@@ -35,12 +35,12 @@ TODO: write spec for `cc`
     {
         "tracks": [
             [
-                { "type": "note", "absTime": 0, "duration": 1, "midinote": 60 },
-                { "type": "note", "absTime": 1, "duration": 1, "midinote": 64 },
-                { "type": "note", "absTime": 3, "duration": 1, "midinote": 67 },
+                { "eventType": "note", "absTime": 0, "duration": 1, "midinote": 60 },
+                { "eventType": "note", "absTime": 1, "duration": 1, "midinote": 64 },
+                { "eventType": "note", "absTime": 3, "duration": 1, "midinote": 67 },
             ],
             [
-                { "type": "note", "absTime": 0, "duration": 3, "midinote": 60 },
+                { "eventType": "note", "absTime": 0, "duration": 3, "midinote": 60 },
             ]
         ],
         "timeSig": "4/4",

@@ -15,7 +15,7 @@ enum MidiTypes {
 
 json parseInput(std::string input);
 int writeMIDIFile(json input, std::string output); 
-MidiTypes getEnumValue(std::string const &type);
+MidiTypes getEnumValue(std::string const &eventType);
 
 int main(int argc, char *argv[])
 {
@@ -61,9 +61,9 @@ json parseInput(std::string input)
     return j;
 }
 
-MidiTypes getEnumValue(std::string const &type) {
-    if (type == "note") return nNOTE;
-    if (type == "cc") return nCC;
+MidiTypes getEnumValue(std::string const &eventType) {
+    if (eventType == "note") return nNOTE;
+    if (eventType == "cc") return nCC;
     return nUNDEFINED;
 }
 
@@ -93,14 +93,14 @@ int writeMIDIFile(json input, std::string output)
 
     for (auto &t : tracks) {
         for (auto &event : t) {
-            std::string type = !event["type"].is_null() ? event["type"].get<std::string>() : "";
+            std::string eventType = !event["eventType"].is_null() ? event["eventType"].get<std::string>() : "";
 
             if (event["absTime"].is_null()) {
                 std::cout << "All events needs an absolute time (absTime), skipping.." << std::endl;
             } else {
                 float absTime = event["absTime"].get<float>();
 
-                switch (getEnumValue(type)) {
+                switch (getEnumValue(eventType)) {
                     case nNOTE: {
                         /* std::cout << "Found note event" << std::endl; */
                         int vel, pitch, channel;
