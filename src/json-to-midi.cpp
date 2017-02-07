@@ -90,6 +90,7 @@ int writeMIDIFile(json input, std::string output)
 
     midifile.setTicksPerQuarterNote(tpq);
     midifile.addTrack(tracks.size());
+    midifile.addTempo(0, 0, bpm);
 
     for (auto &t : tracks) {
         for (auto &event : t) {
