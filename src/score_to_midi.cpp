@@ -1,49 +1,156 @@
 #include <iostream>
 #include <fstream>
 
+#include "cxxopts.hpp"
 #include "json.hpp"
 #include "MidiFile.h"
 
-using namespace std;
 using json = nlohmann::json;
 
-int main(int argc, char** argv)
+enum MidiTypes {
+    eNOTE,
+    eCC,
+    eUNDEFINED
+};
+
+json parseInput(std::string input);
+int writeMIDIFile(json input, std::string output); 
+MidiTypes getEnumValue(std::string const &type);
+
+int main(int argc, char *argv[])
 {
-    std::string input_json = argv[1]; 
-    // read a JSON file
-    ifstream i(input_json);
+    std::string inputPath;
+    std::string outputPath;
+
+    try {
+        cxxopts::Options options(argv[0]);
+
+        options.add_options()
+            ("i,input", "json document input file", cxxopts::value<std::string>(), "FILE")
+            ("o,output", "MIDI file output path", cxxopts::value<std::string>(), "FILE")
+            ("h,help", "Print help");
+
+        options.parse(argc, argv);
+
+        if (options.count("help")) {
+            std::cout << options.help({"", "Group"}) << std::endl;
+            exit(0);
+        }
+
+        if (options.count("input")) {
+            inputPath = options["input"].as<std::string>();
+        }
+
+        if (options.count("output")) {
+            outputPath = options["output"].as<std::string>();
+        }
+    } catch (const cxxopts::OptionException& e) {
+        std::cout << "Error parsing options: " << e.what() << std::endl;
+        exit(1);
+    }
+
+    json input = parseInput(inputPath);
+    return writeMIDIFile(input, outputPath);
+}
+
+json parseInput(std::string input)
+{
+    std::ifstream i(input);
     json j;
     i >> j;
+    return j;
+}
 
+MidiTypes getEnumValue(std::string const &type) {
+    if (type == "note") return eNOTE;
+    if (type == "cc") return eCC;
+    return eUNDEFINED;
+}
+
+int writeMIDIFile(json input, std::string output)
+{
     MidiFile midifile;
+    // use absolute time values and convert to deltas later
+    midifile.absoluteTicks();
 
-    midifile.absoluteTicks(); // use absolute time values and convert to deltas later
-    midifile.addTrack();
+    int bpm;
+    if (!input["bpm"].is_null()) {
+        bpm = input["bpm"].get<int>();
+    } else {
+        std::cout << "Warning: Could not find bpm key!" << " bpm has been set to 60" << std::endl;
+        bpm = 60;
+    }
 
-    int bpm = 120;
-    int tpq = 128; // ticks per quarter note
-    float timeScale = tpq * (bpm / 60);
+    const int tpq = 128; // ticks per quarter note
+    const float timeScale = tpq * (bpm / 60);
+
+    auto &tracks = input["tracks"];
+    /* int channel = 0; */
+    int track = 1;
 
     midifile.setTicksPerQuarterNote(tpq);
+    midifile.addTrack(tracks.size());
 
-    int channel = 0;
-    int track = 0;
+    for (auto &t : tracks) {
+        for (auto &event : t) {
+            std::string type = !event["type"].is_null() ? event["type"].get<std::string>() : "";
 
-    for (auto& element : j) {
-        /* std::cout << element << '\n'; */
-        int pitch = element["midiNote"];
-        float absTime = element["absTime"];
+            if (event["absTime"].is_null()) {
+                std::cout << "All events needs an absolute time (absTime), skipping.." << std::endl;
+            } else {
+                float absTime = event["absTime"].get<float>();
 
-        if (element["action"] == "noteOn") {
-            midifile.addNoteOn(track, absTime * timeScale, channel, pitch, 64);
-        } else if(element["action"] == "noteOff") {
-            midifile.addNoteOff(track, absTime * timeScale, channel, pitch, 0);
+                switch (getEnumValue(type)) {
+                    case eNOTE: {
+                        std::cout << "Found note event" << std::endl;
+                        int vel, pitch, dur, channel;
+
+                        if (event["midinote"].is_number()) {
+                            pitch = event["midinote"].get<int>();
+                        } else {
+                            std::cout << "midinote is required, skipping" << std::endl;
+                            break;
+                        }
+
+                        if (event["velocity"].is_number()) {
+                            vel = event["velocity"].get<int>();
+                        } else {
+                            vel = 64;
+                        }
+
+                        if (event["channel"].is_number()) {
+                            channel = event["channel"].get<int>();
+                        } else {
+                            channel = 0;
+                        }
+
+                        if (event["duration"].is_number()) {
+                            dur = event["duration"].get<float>();
+                        } else {
+                            std::cout << "duration not found, setting to 1" << std::endl;
+                            dur = 1;
+                        }
+
+                        midifile.addNoteOn(track, absTime * timeScale, channel, pitch, vel);
+                        midifile.addNoteOff(track, (absTime + dur) * timeScale, channel, pitch, 0);
+                        break;
+                    }
+                    case eCC: {
+                        std::cout << "Found cc event" << std::endl;
+                        break;
+                    }
+                    case eUNDEFINED: {
+                        std::cout << "Skipping undefined event" << std::endl;
+                        break;
+                    }
+                }
+            }
+
         }
+        track++;
     }
 
     midifile.sortTracks();
-    midifile.joinTracks();
-    midifile.write("test.mid");
-
-    return 0;
+    /* midifile.joinTracks(); */
+    return midifile.write(output);
 }
