@@ -68,9 +68,10 @@ MidiTypes getEnumValue(std::string const &eventType) {
 
 void createMidiNoteEvents(MidiFile &midifile, int track, float timeScale, json event)
 {
-    float absTime = event["absTime"].get<float>();
-    int vel, pitch, channel;
-    float dur;
+    double absTime = event["absTime"];
+    double dur;
+
+    int pitch, vel, channel;
 
     if (event["midinote"].is_number()) {
         pitch = event["midinote"].get<int>();
@@ -79,27 +80,18 @@ void createMidiNoteEvents(MidiFile &midifile, int track, float timeScale, json e
         return;
     }
 
-    if (event["velocity"].is_number()) {
-        vel = event["velocity"].get<int>();
-    } else {
-        vel = 64;
-    }
-
-    if (event["channel"].is_number()) {
-        channel = event["channel"].get<int>();
-    } else {
-        channel = 0;
-    }
-
-    if (event["duration"].is_number()) {
-        dur = event["duration"].get<float>();
-    } else {
-        std::cout << "duration not found, setting to 1" << std::endl;
-        dur = 1;
-    }
+    dur = event["duration"].is_number() ? event["duration"].get<double>() : 0.0;
+    vel = event["velocity"].is_number() ? event["velocity"].get<int>() : 64;
+    channel = event["channel"].is_number() ? event["channel"].get<int>() : 0;
 
     midifile.addNoteOn(track, absTime * timeScale, channel, pitch, vel);
-    midifile.addNoteOff(track, (absTime + dur) * timeScale, channel, pitch, 0);
+
+    if (dur > 0.0) {
+        midifile.addNoteOff(track, (absTime + dur) * timeScale, channel, pitch, 0);
+    } else {
+        std::cout << "Event duration should be greater than zero" << dur << std::endl;
+        std::cout << "Did not write noteOff event" << dur << std::endl;
+    }
 }
 
 int writeMIDIFile(json input, std::string output)
