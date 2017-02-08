@@ -66,7 +66,7 @@ MidiTypes getEnumValue(std::string const &eventType) {
     return nUNDEFINED;
 }
 
-void createMidiNoteEvents(MidiFile &midifile, int track, float timeScale, json event)
+void createMidiNoteEvents(MidiFile &midifile, int track, double timeScale, json event)
 {
     double absTime = event["absTime"];
     double dur;
@@ -109,7 +109,7 @@ int writeMIDIFile(json input, std::string output)
     }
 
     const int tpq = 192; // ticks per quarter note
-    const float timeScale = tpq * (bpm / 60);
+    const double timeScale = tpq * (bpm / 60);
 
     auto &tracks = input["tracks"];
     int track = 1;
