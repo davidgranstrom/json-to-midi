@@ -124,12 +124,12 @@ int writeMIDIFile(json input, std::string output)
     // use absolute time values and convert to deltas later
     midifile.absoluteTicks();
 
-    int bpm;
+    double bpm;
     if (!input["bpm"].is_null()) {
-        bpm = input["bpm"].get<int>();
+        bpm = input["bpm"].get<double>();
     } else {
         std::cout << "Warning: Could not find bpm key!" << " bpm has been set to 60" << std::endl;
-        bpm = 60;
+        bpm = 60.0;
     }
 
     const int tpq = 192; // ticks per quarter note
