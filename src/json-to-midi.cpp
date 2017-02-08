@@ -89,8 +89,8 @@ void createMidiNoteEvents(MidiFile &midifile, int track, double timeScale, json 
     if (dur > 0.0) {
         midifile.addNoteOff(track, (absTime + dur) * timeScale, channel, pitch, 0);
     } else {
-        std::cout << "Event duration should be greater than zero" << dur << std::endl;
-        std::cout << "Did not write noteOff event" << dur << std::endl;
+        std::cout << "Warning: Event duration should be greater than zero."
+            << " Did not write noteOff event." << std::endl;
     }
 }
 
