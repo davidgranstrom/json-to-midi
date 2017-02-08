@@ -15,7 +15,6 @@ enum MidiTypes {
 
 json parseInput(std::string input);
 int writeMIDIFile(json input, std::string output); 
-MidiTypes getEnumValue(std::string const &eventType);
 
 int main(int argc, char *argv[])
 {
