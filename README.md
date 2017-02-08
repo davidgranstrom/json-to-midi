@@ -28,7 +28,7 @@ The `eventType` key specifies the midi event:
 
 * eventType
     - `note`
-    - `cc` (not implemented yet)
+    - `cc`
 
 All events are required to have an absolute time in seconds:
 
@@ -45,7 +45,8 @@ A `note` event will be translated into noteOn/noteOff midi event pairs. The `dur
 
 ### cc
 
-TODO: write spec
+* `ccVal`
+* `ccNum`
 
 ## Example document
 

@@ -94,6 +94,30 @@ void createMidiNoteEvents(MidiFile &midifile, int track, double timeScale, json 
     }
 }
 
+void createCCEvent(MidiFile &midifile, int track, double timeScale, json event)
+{
+    double absTime = event["absTime"];
+    int ccNum, ccVal, channel;
+
+    if (event["ccNum"].is_number()) {
+        ccNum = event["ccNum"].get<int>();
+    } else {
+        std::cout << "ccNum is required, skipping" << std::endl;
+        return;
+    }
+
+    if (event["ccVal"].is_number()) {
+        ccVal = event["ccVal"].get<int>();
+    } else {
+        std::cout << "ccVal is required, skipping" << std::endl;
+        return;
+    }
+
+    channel = event["channel"].is_number() ? event["channel"].get<int>() : 0;
+
+    midifile.addController(track, absTime * timeScale, channel, ccNum, ccVal);
+}
+
 int writeMIDIFile(json input, std::string output)
 {
     MidiFile midifile;
@@ -132,7 +156,7 @@ int writeMIDIFile(json input, std::string output)
                     createMidiNoteEvents(midifile, track, timeScale, event);
                     break;
                 case nCC: {
-                    std::cout << "Found cc event" << std::endl;
+                    createCCEvent(midifile, track, timeScale, event);
                     break;
                 }
                 case nUNDEFINED: {
