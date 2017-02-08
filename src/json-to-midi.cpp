@@ -66,6 +66,42 @@ MidiTypes getEnumValue(std::string const &eventType) {
     return nUNDEFINED;
 }
 
+void createMidiNoteEvents(MidiFile &midifile, int track, float timeScale, json event)
+{
+    float absTime = event["absTime"].get<float>();
+    int vel, pitch, channel;
+    float dur;
+
+    if (event["midinote"].is_number()) {
+        pitch = event["midinote"].get<int>();
+    } else {
+        std::cout << "midinote is required, skipping" << std::endl;
+        return;
+    }
+
+    if (event["velocity"].is_number()) {
+        vel = event["velocity"].get<int>();
+    } else {
+        vel = 64;
+    }
+
+    if (event["channel"].is_number()) {
+        channel = event["channel"].get<int>();
+    } else {
+        channel = 0;
+    }
+
+    if (event["duration"].is_number()) {
+        dur = event["duration"].get<float>();
+    } else {
+        std::cout << "duration not found, setting to 1" << std::endl;
+        dur = 1;
+    }
+
+    midifile.addNoteOn(track, absTime * timeScale, channel, pitch, vel);
+    midifile.addNoteOff(track, (absTime + dur) * timeScale, channel, pitch, 0);
+}
+
 int writeMIDIFile(json input, std::string output)
 {
     MidiFile midifile;
@@ -92,57 +128,24 @@ int writeMIDIFile(json input, std::string output)
 
     for (auto &t : tracks) {
         for (auto &event : t) {
-            std::string eventType = !event["eventType"].is_null() ? event["eventType"].get<std::string>() : "";
-
             if (event["absTime"].is_null()) {
                 std::cout << "All events needs an absolute time (absTime), skipping.." << std::endl;
-            } else {
-                float absTime = event["absTime"].get<float>();
+                continue;
+            }
 
-                switch (getEnumValue(eventType)) {
-                    case nNOTE: {
-                        /* std::cout << "Found note event" << std::endl; */
-                        int vel, pitch, channel;
-                        float dur;
+            std::string eventType = !event["eventType"].is_null() ? event["eventType"].get<std::string>() : "";
 
-                        if (event["midinote"].is_number()) {
-                            pitch = event["midinote"].get<int>();
-                        } else {
-                            std::cout << "midinote is required, skipping" << std::endl;
-                            break;
-                        }
-
-                        if (event["velocity"].is_number()) {
-                            vel = event["velocity"].get<int>();
-                        } else {
-                            vel = 64;
-                        }
-
-                        if (event["channel"].is_number()) {
-                            channel = event["channel"].get<int>();
-                        } else {
-                            channel = 0;
-                        }
-
-                        if (event["duration"].is_number()) {
-                            dur = event["duration"].get<float>();
-                        } else {
-                            std::cout << "duration not found, setting to 1" << std::endl;
-                            dur = 1;
-                        }
-
-                        midifile.addNoteOn(track, absTime * timeScale, channel, pitch, vel);
-                        midifile.addNoteOff(track, (absTime + dur) * timeScale, channel, pitch, 0);
-                        break;
-                    }
-                    case nCC: {
-                        std::cout << "Found cc event" << std::endl;
-                        break;
-                    }
-                    case nUNDEFINED: {
-                        std::cout << "Skipping undefined event" << std::endl;
-                        break;
-                    }
+            switch (getEnumValue(eventType)) {
+                case nNOTE:
+                    createMidiNoteEvents(midifile, track, timeScale, event);
+                    break;
+                case nCC: {
+                    std::cout << "Found cc event" << std::endl;
+                    break;
+                }
+                case nUNDEFINED: {
+                    std::cout << "Skipping undefined event" << std::endl;
+                    break;
                 }
             }
         }
