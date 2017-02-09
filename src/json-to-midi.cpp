@@ -173,6 +173,7 @@ int writeMIDIFile(json input, std::string output)
     }
 
     midifile.sortTracks();
+    midifile.linkNotePairs();
     midifile.write(output);
     // true on success
     return !midifile.status();
