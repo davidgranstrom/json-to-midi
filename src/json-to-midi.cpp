@@ -15,12 +15,13 @@ enum MidiTypes {
 };
 
 json parseInput(std::string input);
-int writeMIDIFile(json input, std::string output); 
+int writeMIDIFile(json input, std::string output, bool joinTracks); 
 
 int main(int argc, char *argv[])
 {
     std::string inputPath;
     std::string outputPath;
+    bool joinTracks = false;
 
     try {
         cxxopts::Options options(argv[0], "json2midi - json to midi file converter");
@@ -28,6 +29,7 @@ int main(int argc, char *argv[])
         options.add_options()
             ("i,input", "json document input file", cxxopts::value<std::string>(), "FILE")
             ("o,output", "MIDI file output path", cxxopts::value<std::string>(), "FILE")
+            ("m,merge", "Merge all tracks in output MIDI file")
             ("h,help", "Print help");
 
         options.parse(argc, argv);
@@ -44,13 +46,17 @@ int main(int argc, char *argv[])
         if (options.count("output")) {
             outputPath = options["output"].as<std::string>();
         }
+
+        if (options.count("merge")) {
+            joinTracks = true;
+        }
     } catch (const cxxopts::OptionException& e) {
         std::cout << "Error parsing options: " << e.what() << std::endl;
         exit(1);
     }
 
     json input = parseInput(inputPath);
-    return writeMIDIFile(input, outputPath);
+    return writeMIDIFile(input, outputPath, joinTracks);
 }
 
 json parseInput(std::string input)
@@ -119,7 +125,7 @@ void createCCEvent(MidiFile &midifile, int track, double timeScale, json event)
     midifile.addController(track, nearbyint(absTime * timeScale), channel, ccNum, ccVal);
 }
 
-int writeMIDIFile(json input, std::string output)
+int writeMIDIFile(json input, std::string output, bool joinTracks)
 {
     MidiFile midifile;
     // use absolute time values and convert to deltas later
@@ -174,6 +180,9 @@ int writeMIDIFile(json input, std::string output)
 
     midifile.sortTracks();
     midifile.linkNotePairs();
+    if (joinTracks) {
+        midifile.joinTracks();
+    }
     midifile.write(output);
     // true on success
     return !midifile.status();
