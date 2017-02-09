@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <math.h>
 
 #include "cxxopts.hpp"
 #include "json.hpp"
@@ -68,10 +69,10 @@ MidiTypes getEnumValue(std::string const &eventType) {
 
 void createMidiNoteEvents(MidiFile &midifile, int track, double timeScale, json event)
 {
-    double absTime = event["absTime"];
-    double dur;
-
+    double dur, absTime;
     int pitch, vel, channel;
+
+    absTime = event["absTime"].get<double>();
 
     if (event["midinote"].is_number()) {
         pitch = event["midinote"].get<int>();
@@ -84,10 +85,10 @@ void createMidiNoteEvents(MidiFile &midifile, int track, double timeScale, json 
     vel = event["velocity"].is_number() ? event["velocity"].get<int>() : 64;
     channel = event["channel"].is_number() ? event["channel"].get<int>() : 0;
 
-    midifile.addNoteOn(track, absTime * timeScale, channel, pitch, vel);
+    midifile.addNoteOn(track, nearbyint(absTime * timeScale), channel, pitch, vel);
 
     if (dur > 0.0) {
-        midifile.addNoteOff(track, (absTime + dur) * timeScale, channel, pitch, 0);
+        midifile.addNoteOff(track, nearbyint((absTime + dur) * timeScale), channel, pitch, 0);
     } else {
         std::cout << "Warning: Event duration should be greater than zero."
             << " Did not write noteOff event." << std::endl;
@@ -115,7 +116,7 @@ void createCCEvent(MidiFile &midifile, int track, double timeScale, json event)
 
     channel = event["channel"].is_number() ? event["channel"].get<int>() : 0;
 
-    midifile.addController(track, absTime * timeScale, channel, ccNum, ccVal);
+    midifile.addController(track, nearbyint(absTime * timeScale), channel, ccNum, ccVal);
 }
 
 int writeMIDIFile(json input, std::string output)
@@ -132,14 +133,17 @@ int writeMIDIFile(json input, std::string output)
         bpm = 60.0;
     }
 
-    const int tpq = 480; // ticks per quarter note
-    const double timeScale = tpq * (bpm / 60);
+    const double tpq = 960.0; // ticks per quarter note
+    const double timeScale = tpq * (bpm / 60); // ticks per second
 
     auto &tracks = input["tracks"];
     int track = 1;
 
-    midifile.setTicksPerQuarterNote(tpq);
     midifile.addTrack(tracks.size());
+    midifile.setTicksPerQuarterNote(tpq);
+
+    // add meta events (track 0, tick 0) 
+    /* midifile.addTrackName(0, 0, "Test output"); */
     midifile.addTempo(0, 0, bpm);
 
     for (auto &t : tracks) {
