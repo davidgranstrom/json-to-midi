@@ -14,9 +14,14 @@ pushd ./midifile > /dev/null
 make library
 popd > /dev/null
 
-echo "Copying files"
+printf "Moving files into place.. "
+
+headers=("Binasc.h" "MidiEvent.h" "MidiEventList.h" "MidiFile.h" "MidiMessage.h")
+for header in "${headers[@]}"
+do
+    cp ./midifile/include/"$header" ./include
+done
 
 mv ./midifile/lib/libmidifile.a ./lib
-cp ./midifile/include/* ./include
 
 echo "Done"
