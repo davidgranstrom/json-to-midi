@@ -7,6 +7,22 @@ json-to-midi
 
     ./json2midi --input input.json --output output.mid
 
+## Installation
+
+1. Clone the repo
+
+        git clone https://github.com/davidgranstrom/json-to-midi.git --recursive
+
+2. Build the `midifile` library
+
+        ./build-libmidifile.sh
+
+3. Build `json2midi` executable
+
+        make
+
+If you need to rebuild the `midifile` library for some reason, just delete `./lib/libmidifile.a` and run the `./build-libmidifile.sh` script again.
+
 ## Document structure
 
 The MIDI file is parsed from a json document.
